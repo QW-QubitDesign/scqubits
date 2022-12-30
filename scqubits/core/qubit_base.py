@@ -452,6 +452,7 @@ class QubitBaseClass(QuantumSystem, ABC):
         setattr(self, param_name, paramval)
         return self.eigenvals(evals_count)
 
+    def _hamiltonian_for_paramval(
         self, paramval: float, param_name: str
     ) -> ndarray:
         setattr(self, param_name, paramval)
