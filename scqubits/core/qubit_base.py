@@ -452,6 +452,63 @@ class QubitBaseClass(QuantumSystem, ABC):
         setattr(self, param_name, paramval)
         return self.eigenvals(evals_count)
 
+        self, paramval: float, param_name: str
+    ) -> ndarray:
+        setattr(self, param_name, paramval)
+        return self.hamiltonian()
+
+    def get_hamiltonian_vs_paramvals(
+        self,
+        param_name: str,
+        param_vals: ndarray,
+        filename: str = None,
+        num_cpus: Optional[int] = None,
+    ) -> ndarray:
+        """Calculates Hamiltonian for a varying system parameter,
+        given an array of parameter values. Returns a numpy array.
+
+        Parameters
+        ----------
+        param_name:
+            name of parameter to be varied
+        param_vals:
+            parameter values to be plugged in
+        filename:
+            file name if direct output to disk is wanted
+        num_cpus:
+            number of cores to be used for computation
+            (default value: settings.NUM_CPUS)
+        """
+        num_cpus = num_cpus or settings.NUM_CPUS
+        previous_paramval = getattr(self, param_name)
+        tqdm_disable = num_cpus > 1 or settings.PROGRESSBAR_DISABLED
+
+
+        target_map = get_map_method(num_cpus)
+
+        func_evals = functools.partial(
+            self._hamiltonian_for_paramval, param_name=param_name
+        )
+        with InfoBar(
+            "Parallel computation of eigensystems [num_cpus={}]".format(num_cpus),
+            num_cpus,
+        ):
+            hamiltonian_list = list(
+                target_map(
+                    func_evals,
+                    tqdm(
+                        param_vals,
+                        desc="Spectral data",
+                        leave=False,
+                        disable=tqdm_disable,
+                    ),
+                )
+            )
+
+        setattr(self, param_name, previous_paramval)
+
+        return hamiltonian_list
+
     def get_spectrum_vs_paramvals(
         self,
         param_name: str,

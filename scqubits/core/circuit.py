@@ -114,7 +114,7 @@ class Subsystem(base.QubitBaseClass, serializers.Serializable):
         subsystem, is set to None when hierarchical diagonalization is not required,
         by default `None`
     truncated_dim: Optional[int], optional
-        sets the truncated dimension for the current subsystem, set to 10 by default.
+        sets the truncated dimension for the current subsystem, by default 10
     """
 
     # switch used in protecting the class from erroneous addition of new attributes
@@ -654,7 +654,7 @@ class Subsystem(base.QubitBaseClass, serializers.Serializable):
                 [interaction_sym[index] for index in range(len(self.system_hierarchy))],
             )
         )
-
+        
         self.subsystems: Dict[int, "Subsystem"] = dict(
             zip(
                 range(len(self.system_hierarchy)),
@@ -3425,7 +3425,7 @@ class Circuit(Subsystem):
         self.clear_unnecessary_attribs()
         self._frozen = True
 
-    def variable_transformation(self) -> None:
+    def variable_transformation(self,IPython=True) -> None:
         """
         Prints the variable transformation used in this circuit
         """
@@ -3447,7 +3447,7 @@ class Circuit(Subsystem):
             node_var_eqns.append(
                 sm.Eq(node_vars[idx], np.sum(trans_mat[idx, :] * theta_vars))
             )
-        if _HAS_IPYTHON:
+        if _HAS_IPYTHON and IPython:
             self.print_expr_in_latex(node_var_eqns)
         else:
             print(node_var_eqns)
